@@ -26,7 +26,7 @@ func main() {
 	//e.Use(middleware.BasicAuth(Log))
 	e.GET("/insert", handler.Insert)
 	e.GET("/login", handler.Login)
-	e.GET("/show_timetable", handler.Show)
-	e.GET("/delete", handler.Delete)
+	e.GET("/show", handler.Show)
+	e.GET("/del", handler.Delete)
 	e.Start(":8000")
 }
