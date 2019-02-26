@@ -19,7 +19,10 @@ type (
 	}
 	Schedule struct {
 		Id      int
+		Day string
 		Faculty string
+		Start time.Time
+		Finish time.Time
 		Time    string
 		Subject string
 		Teacher string
@@ -103,13 +106,14 @@ func Show(c echo.Context) (err error) {
 	db := dbConn()
 	defer db.Close()
 	a := c.QueryParam("faculty")
-	query := `SELECT intervals.id, intervals.start, intervals.finish, subjects.name, teachers.name FROM schedule
+	b:= c.QueryParam("day")
+	query := `SELECT schedule.id, intervals.start, intervals.finish, subjects.name, teachers.name FROM schedule
 			  INNER JOIN faculties ON facultyid = faculties.id
 		 	  INNER JOIN subjects ON subjectid = subjects.id
 	 		  INNER JOIN intervals ON intervalid = intervals.id 
 	   		  INNER JOIN teachers ON teacherid = teachers.id
-			  INNER JOIN days ON dayid = days.id WHERE faculties.name = $1 AND days.name='Monday';`
-	selDB, err := db.Query(query, a)
+			  INNER JOIN days ON dayid = days.id WHERE faculties.name = $1 AND days.name=$2 ORDER BY intervals.start;`
+	selDB, err := db.Query(query, a,b)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -117,15 +121,16 @@ func Show(c echo.Context) (err error) {
 	res := []Schedule{}
 	for selDB.Next() {
 		var Id int
-		var Start, Finish, Subject, Teacher string
-		err = selDB.Scan(&Id, &Start, &Finish, &Subject, &Teacher)
+		var Subject, Teacher string
+		var Start, Finish time.Time
+			err = selDB.Scan(&Id, &Start, &Finish, &Subject, &Teacher)
 		if err != nil {
 			fmt.Println(err)
 			continue
 		}
 		sch.Id = Id
 		sch.Faculty = a
-		sch.Time = Start + " — " + Finish
+		sch.Time = Start.Format("15:04") + " — " + Finish.Format("15:04")
 		sch.Subject = Subject
 		sch.Teacher = Teacher
 		res = append(res, sch)
@@ -135,23 +140,25 @@ func Show(c echo.Context) (err error) {
 func Delete(c echo.Context) (err error) {
 	db := dbConn()
 	pid := c.QueryParam("id")
-	fac := c.QueryParam("faculty")
+	//fac := c.QueryParam("faculty")
 	sqlStatement := `DELETE FROM schedule WHERE id = $1;`
 	_, err = db.Exec(sqlStatement, pid)
 	if err != nil {
 		panic(err)
 	}
 	defer db.Close()
-	return c.String(http.StatusOK, `Was deleted from `+fac)
+	return c.String(http.StatusOK, "was deleted")
+	//return c.Redirect(http.StatusOK,"/show?faculty=PMPU&day=Monday")
 }
 func Insert(c echo.Context) (err error) {
 	db := dbConn()
 	Faculty:=c.QueryParam("faculty")
 	Day := c.QueryParam("day")
-	Start := c.QueryParam("start")
-	Finish := c.QueryParam("finish")
+	Start := c.QueryParam("begin")
+	Finish := c.QueryParam("end")
 	Subject := c.QueryParam("subject")
 	Teacher := c.QueryParam("teacher")
+	fmt.Print(Start)
 	var Iid int
 	db.QueryRow(`SELECT intervals.id FROM intervals WHERE intervals.start= '`+Start+`' AND intervals.finish = '`+Finish+`';`).Scan(&Iid)
 	if (Iid==0){
@@ -175,43 +182,46 @@ func Insert(c echo.Context) (err error) {
 	if err != nil {
 		panic(err.Error())
 	}
-	fmt.Print(Did, Iid, Fid, Sid,Tid)
+	fmt.Print(Iid)
 	insForm.Exec(Did, Iid, Fid, Sid,Tid)
 	defer db.Close()
 	return c.String(http.StatusOK, "Insert done!")
 }
-
-/*func Edit(c echo.Context) (err error) {
+func Edit(c echo.Context) (err error) {
 	db := dbConn()
-	nId := c.QueryParam("id")
+	defer db.Close()
 	a := c.QueryParam("faculty")
-	query := `SELECT schedule.id, intervals.start, intervals.finish, subjects.name, teachers.name FROM schedule
+	b:= c.QueryParam("id")
+	query := `SELECT days.name, intervals.start as st, intervals.finish, subjects.name, teachers.name FROM schedule
 			  INNER JOIN faculties ON facultyid = faculties.id
 		 	  INNER JOIN subjects ON subjectid = subjects.id
-	 		  INNER JOIN intervals ON intervalid = intervals.id
+	 		  INNER JOIN intervals ON intervalid = intervals.id 
 	   		  INNER JOIN teachers ON teacherid = teachers.id
-			  INNER JOIN days ON dayid = days.id WHERE faculties.name = $1 AND days.name='Monday' AND schedule.id=$2`
-	selDB, err := db.Query(query,a, nId)
+			  INNER JOIN days ON dayid = days.id WHERE schedule.id = $1 ORDER BY st;`
+	selDB, err := db.Query(query,b)
 	if err != nil {
 		panic(err.Error())
 	}
 	sch := Schedule{}
 	res := []Schedule{}
 	for selDB.Next() {
-		var Id int
-		var Start, Finish, Subject, Teacher string
-		err = selDB.Scan(&Id,&Start, &Finish, &Subject, &Teacher)
+		var Day, Subject, Teacher string
+		var Start, Finish time.Time
+		err = selDB.Scan(&Day, &Start, &Finish, &Subject, &Teacher)
 		if err != nil {
-			panic(err.Error())
+			fmt.Println(err)
+			continue
 		}
-		sch.Id = Id
+		sch.Day = Day
 		sch.Faculty = a
-		sch.Time = Start +" — "+Finish
-		sch.Subject = Subject
+		sch.Start = Start
+		sch.Finish=Finish
+ 		sch.Subject = Subject
 		sch.Teacher = Teacher
 		res = append(res, sch)
 	}
-	tmpl.ExecuteTemplate(w, "Edit", emp)
-	defer db.Close()
+	fmt.Print("ok")
+	return c.Render(http.StatusOK, "edit.html", nil)
 }
-*/
+
+

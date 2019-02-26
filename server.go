@@ -24,9 +24,11 @@ func main() {
 		templates: template.Must(template.ParseGlob("static/*.html")),
 	}
 	//e.Use(middleware.BasicAuth(Log))
-	e.GET("/insert", handler.Insert)
+	e.GET("/ins", handler.Insert)
 	e.GET("/login", handler.Login)
 	e.GET("/show", handler.Show)
 	e.GET("/del", handler.Delete)
+	e.GET("/edit", handler.Edit)
+//	e.GET("/editdone", handler.Editdone)
 	e.Start(":8000")
 }

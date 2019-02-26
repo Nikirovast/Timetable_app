@@ -18,12 +18,12 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
             <div class="navbar-nav">
-                <a class="nav-item nav-link " role="navigation" href="/show_timetable?day=Monday&faculty=PMPU">Monday </a>
-                <a class="nav-item nav-link " href="/show_timetable?day=Tuesday&faculty=PMPU">Tuesday </a>
-                <a class="nav-item nav-link" href="/show_timetable&day=Wednesday">Wednesday</a>
-                <a class="nav-item nav-link" href="#">Thursday</a>
-                <a class="nav-item nav-link" href="#">Friday</a>
-                <a class="nav-item nav-link" href="#">Saturday</a>
+                <a class="nav-item nav-link " role="navigation" href="/show?day=Monday&faculty=PMPU">Monday </a>
+                <a class="nav-item nav-link " href="/show?day=Tuesday&faculty=PMPU">Tuesday </a>
+                <a class="nav-item nav-link" href="/show?day=Wednesday&faculty=PMPU">Wednesday</a>
+                <a class="nav-item nav-link" href="/show?day=Thursday&faculty=PMPU">Thursday</a>
+                <a class="nav-item nav-link" href="/show?day=Friday&faculty=PMPU">Friday</a>
+                <a class="nav-item nav-link" href="/show?day=Saturday&faculty=PMPU">Saturday</a>
             </div>
         </div>
     </nav>
@@ -44,7 +44,7 @@
             <th scope="row">{{ .Subject }}</th>
             <th scope="row">{{ .Teacher }}</th>
             <td><a href="/del?faculty={{ .Faculty}}&id={{ .Id }}">Delete</a></td>
-            <td><a href="/edit?faculty={{ .Faculty}}&id={{ .Id }}">Edit</a></td>
+            <td><a href="/edit?faculty={{ .Faculty}}&id={{ .Id }}">Add</a></td>
         </tr>
         </tbody>
         {{ end }}
