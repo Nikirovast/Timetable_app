@@ -1,2 +1,2 @@
 # Timetable_app
-Web-app written in Golang with echo
+University timetable web-application written in Golang with echo
